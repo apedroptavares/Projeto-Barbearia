@@ -221,77 +221,77 @@
         </div>
     </footer>
 <script>
+    function closeModal() {
+        document.getElementById('booking-modal').classList.add('hidden');
+    }
 
-    
-            // Agendamento Form
-        document.getElementById('confirm-booking').addEventListener('click', function() {
-            const service = document.getElementById('service').value;
-            const date = document.getElementById('date').value;
-            const time = document.getElementById('time').value;
-            const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
-            
-            if (!service || !date || !time || !name || !phone) {
-                alert('Por favor, preencha todos os campos do formulário.');
-                return;
-            }
-            
-            // Data
-            const dateObj = new Date(date);
-            const formattedDate = dateObj.toLocaleDateString('pt-BR');
-            
-            // Update do modal
-            document.getElementById('modal-service').textContent = document.getElementById('service').options[document.getElementById('service').selectedIndex].text;
-            document.getElementById('modal-date').textContent = formattedDate;
-            document.getElementById('modal-time').textContent = time;
-            document.getElementById('modal-name').textContent = name;
-            
-            // Mostrar o modal
-            document.getElementById('booking-modal').classList.remove('hidden');
-            
-            // Limpar formulário
-            document.getElementById('service').value = '';
-            document.getElementById('date').value = '';
-            document.getElementById('time').value = '';
-            document.getElementById('name').value = '';
-            document.getElementById('phone').value = '';
-        });
+    document.getElementById('confirm-booking').addEventListener('click', function() {
+        const serviceSelect = document.getElementById('service');
+        const serviceText = serviceSelect.options[serviceSelect.selectedIndex].text;
+        const date = document.getElementById('date').value;
+        const time = document.getElementById('time').value;
+        const name = document.getElementById('name').value.trim();
+        const phone = document.getElementById('phone').value.replace(/\D/g, '');
 
-        // Fechar o modal
-        document.getElementById('close-modal').addEventListener('click', function() {
-            document.getElementById('booking-modal').classList.add('hidden');
-        });
+        // Validação
+        if (!serviceSelect.value || !date || !time || !name || phone.length < 10) {
+            alert('Preencha todos os campos corretamente. Verifique o telefone.');
+            return;
+        }
 
-        document.getElementById('modal-ok').addEventListener('click', function() {
-            document.getElementById('booking-modal').classList.add('hidden');
-        });
+        const formattedDate = new Date(date).toLocaleDateString('pt-BR');
 
-        // Cartão de Serviços "Agendar" Botão
-        document.querySelectorAll('.service-card button').forEach(button => {
-            button.addEventListener('click', function() {
-                // Esconder todas as seções
-                document.querySelectorAll('main > section').forEach(section => {
-                    section.classList.add('hidden');
-                });
-                
-                // Mostrar a seção de agendamento
-                document.getElementById('booking').classList.remove('hidden');
-                
-                // Atualizar página ativa
-                document.querySelectorAll('nav a').forEach(navLink => {
-                    navLink.classList.remove('active-tab');
-                });
-                document.getElementById('booking-tab').classList.add('active-tab');
-                
-                // Valor do serviço
-                const serviceName = this.closest('.service-card').querySelector('h3').textContent;
-                const servicePrice = this.closest('.service-card').querySelector('span').textContent;
-                document.getElementById('service').value = serviceName.toLowerCase().replace(/ /g, '_');
-                
-                // Fecha o menu móvel se estiver aberto
-                document.getElementById('mobile-menu').classList.add('hidden');
-            });
-        });
+        // --- MENSAGEM QUE VAI PARA O BARBEIRO ---
+        const messageToBarber = `
+*NOVO AGENDAMENTO*
+
+*Cliente:* ${name}
+*Telefone:* (${phone.substr(0,2)}) ${phone.substr(2,5)}-${phone.substr(7)}
+*Serviço:* ${serviceText}
+*Data:* ${formattedDate}
+*Horário:* ${time}
+
+Aguardando confirmação!
+        `.trim();
+
+        const encodedMessage = encodeURIComponent(messageToBarber);
+
+        // NÚMERO FIXO DA BARBEARIA (MUDE AQUI!)
+        const barberPhone = "5521999999999"; // ← NÚMERO DO BARBEIRO 
+
+        // ABRE WHATSAPP APENAS PARA O BARBEIRO
+        window.open(`https://wa.me/${barberPhone}?text=${encodedMessage}`, '_blank');
+
+        // MOSTRA MODAL PARA O CLIENTE
+        document.getElementById('modal-service').textContent = serviceText;
+        document.getElementById('modal-date').textContent = formattedDate;
+        document.getElementById('modal-time').textContent = time;
+        document.getElementById('modal-name').textContent = name;
+
+        document.getElementById('booking-modal').classList.remove('hidden');
+
+        // Limpa formulário
+        serviceSelect.value = '';
+        document.getElementById('date').value = '';
+        document.getElementById('time').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('phone').value = '';
+    });
+
+    // Fechar modal
+    document.getElementById('close-modal').addEventListener('click', closeModal);
+    document.getElementById('modal-ok').addEventListener('click', closeModal);
 </script>
+
+<script>
+    // Máscara de telefone
+    document.getElementById('phone').addEventListener('input', function (e) {
+        let v = e.target.value.replace(/\D/g, '');
+        v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+        v = v.replace(/(\d{5})(\d)/, '$1-$2');
+        e.target.value = v.substr(0, 15);
+    });
+</script>
+    
 </body>
 </html>
